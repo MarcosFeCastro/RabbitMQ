@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: publisher-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: publisher
+  template:
+    metadata:
+      labels:
+        app: publisher
+    spec:
+      containers:
+      - name: publisher
+        image: marcosfecastro/rabbitmq-java-publisher:v1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        env:
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq-0.rabbitmq.rabbits.svc.cluster.local"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: publisher-service
+  labels:
+    app: publisher
+spec:
+  selector:
+    app: publisher
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    name: http
+    port: 5000
+    targetPort: 5000

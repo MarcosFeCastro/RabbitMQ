@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cunsomer-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cunsomer
+  template:
+    metadata:
+      labels:
+        app: cunsomer
+    spec:
+      containers:
+      - name: cunsomer
+        image: marcosfecastro/rabbitmq-java-consumer:v1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5050
+        env:
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq-0.rabbitmq.rabbits.svc.cluster.local"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cunsomer-service
+  labels:
+    app: cunsomer
+spec:
+  selector:
+    app: cunsomer
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    name: http
+    port: 5050
+    targetPort: 5050

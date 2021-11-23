@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  rabbit:
+    container_name: rabbit
+    hostname: rabbit
+    image: rabbitmq:3.9.8-management
+    restart: always
+    ports:
+    - "5672:5672"
+    - "15672:15672"
+    environment:
+    - RABBITMQ_DEFAULT_USER=guest
+    - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+    - /data/:/var/lib/rabbitmq/
+    networks:
+    - rabbits
+  publisher: 
+    container_name: publisher
+    depends_on:
+    - rabbit
+    links:
+    - rabbit
+    build: applications/java/publisher/
+    environment: 
+    - SPRING_RABBITMQ_HOST=rabbit
+    ports: 
+    - "5000:5000"
+    networks:
+    - rabbits
+  cunsomer: 
+    container_name: cunsomer
+    depends_on:
+    - rabbit
+    links:
+    - rabbit
+    build: applications/java/consumer/
+    environment: 
+    - SPRING_RABBITMQ_HOST=rabbit
+    ports: 
+    - "5050:5050"
+    networks:
+    - rabbits
+---
+networks:
+  rabbits:
